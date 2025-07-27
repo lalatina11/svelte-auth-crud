@@ -38,7 +38,6 @@ export const POST = async ({ cookies, url }: RequestEvent) => {
 		const isLikePostSection = postId && +postId && !commentId
 		const isLikeCommentSection = commentId && +commentId && !postId
 		const payload = jwt.verify(userToken as string, SECRET_KEY) as JwtPayload
-		console.log(payload.id, postId, commentId);
 		let existingLike;
 		if (isLikePostSection) {
 			const [findLike] = await db.select({ id: likeTable.id }).from(likeTable).where(and(eq(likeTable.postId, +postId), eq(likeTable.userId, payload.id as string)))
