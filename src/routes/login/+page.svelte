@@ -45,6 +45,8 @@
 			return goto('/');
 		} catch (error) {
 			formState.error.server = (error as Error).message;
+		} finally {
+			formState.isLoading = false;
 		}
 	};
 </script>
@@ -56,7 +58,9 @@
 		<span class="flex flex-col items-center justify-center text-lg font-semibold"
 			>Login Into Your Account</span
 		>
-		<span class="w-full text-center text-sm text-red-500">{formState.error.server}</span>
+		<span class="flex items-center justify-center text-sm text-red-500"
+			>{formState.error.server}</span
+		>
 		<div class="flex flex-col gap-2">
 			<label for="identifier" class="text-muted-foreground block text-sm font-medium capitalize"
 				>Email atau Username</label
