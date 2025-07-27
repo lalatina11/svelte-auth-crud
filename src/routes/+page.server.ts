@@ -5,13 +5,12 @@ import 'dotenv/config';
 import { eq } from 'drizzle-orm';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
 import type { RequestEvent } from './$types';
-import type { PostWithUser } from '../types';
 
 export const load = async ({ cookies }: RequestEvent) => {
 	const token = cookies.get('user_token');
 	if (token) {
 		const verifyToken = jwt.verify(token.toString(), process.env.SECRET_KEY || '') as JwtPayload;
-		const userInformation = await db.select().from(userTable ).where(eq(userTable .id, verifyToken.id));
+		const userInformation = await db.select().from(userTable).where(eq(userTable.id, verifyToken.id));
 		if (!userInformation.length) {
 			cookies.delete('user_token', { path: '/' });
 			return redirect(301, '/login');
@@ -19,7 +18,7 @@ export const load = async ({ cookies }: RequestEvent) => {
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { password, ...userInformationwWithoutPassword } = await userInformation[0];
 		// console.log(password);
-		const postWithUser: PostWithUser[] = await db
+		const postWithUser = await db
 			.select({
 				id: postTable.id,
 				description: postTable.description,
@@ -29,7 +28,10 @@ export const load = async ({ cookies }: RequestEvent) => {
 				user: {
 					id: userTable.id,
 					username: userTable.username,
-					email: userTable.email
+					email: userTable.email,
+					avatar: userTable.avatar,
+					firstName: userTable.firstName,
+					lastName: userTable.lastName,
 				}
 			})
 			.from(postTable)

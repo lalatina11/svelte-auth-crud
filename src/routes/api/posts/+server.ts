@@ -67,7 +67,10 @@ export const POST: Action = async (ctx) => {
 				user: {
 					id: userTable.id,
 					username: userTable.username,
-					email: userTable.email
+					email: userTable.email,
+					avatar:userTable.avatar,
+					firstName:userTable.firstName,
+					lastName:userTable.lastName,
 				}
 			})
 			.from(postTable)

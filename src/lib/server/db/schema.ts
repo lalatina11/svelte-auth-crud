@@ -40,7 +40,7 @@ export type Post = typeof postTable.$inferSelect;
 export const commentTable = pgTable('comments', (t) => ({
 	id: t.serial('id').primaryKey().notNull(),
 	userId: t
-		.uuid()
+		.uuid('user_id')
 		.references(() => userTable.id)
 		.notNull(),
 	postId: t
@@ -52,8 +52,8 @@ export const commentTable = pgTable('comments', (t) => ({
 	createdAt: t.timestamp('created_at').notNull().defaultNow(),
 	updatedAt: t
 		.timestamp('updated_at')
-		.defaultNow()
 		.notNull()
+		.defaultNow()
 		.$onUpdate(() => new Date(Date.now()))
 }));
 
@@ -62,11 +62,11 @@ export type Comment = typeof commentTable.$inferSelect;
 export const likeTable = pgTable('likes', (t) => ({
 	id: t.serial('id').primaryKey().notNull(),
 	userId: t
-		.uuid()
+		.uuid('user_id')
 		.references(() => userTable.id)
 		.notNull(),
-	postId: t.serial('post_id').references(() => postTable.id),
-	commentId: t.serial('comment_id').references(() => commentTable.id),
+	postId: t.integer('post_id').references(() => postTable.id),
+	commentId: t.integer('comment_id').references(() => commentTable.id),
 	createdAt: t.timestamp('created_at').notNull().defaultNow(),
 	updatedAt: t
 		.timestamp('updated_at')
@@ -75,6 +75,7 @@ export const likeTable = pgTable('likes', (t) => ({
 		.$onUpdate(() => new Date(Date.now()))
 }));
 
+export type Like = typeof likeTable.$inferSelect
 // export const usersTableRelations = relations(userTable, ({ many }) => ({
 // 	posts: many(postTable),
 // 	comments: many(commentTable)

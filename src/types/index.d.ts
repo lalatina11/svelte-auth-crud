@@ -14,6 +14,9 @@ export interface PostWithUser {
     user: {
         id: string;
         username: string;
+        firstName: string;
+        lastName: string;
         email: string;
-    } | null;
+        avatar: string;
+    };
 }
