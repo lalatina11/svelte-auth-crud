@@ -20,7 +20,7 @@ export const load = async ({ cookies }: RequestEvent) => {
 			return redirect(301, '/login');
 		}
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { password, ...userInformationwWithoutPassword } = await userInformation[0];
+		const { password, ...userInformationwWithoutPassword } = userInformation[0];
 		// console.log(password);
 		const postWithUser: PostWithUser[] = await db
 			.select({
@@ -41,6 +41,7 @@ export const load = async ({ cookies }: RequestEvent) => {
 			.from(postTable)
 			.leftJoin(userTable, eq(userTable.id, postTable.userId))
 			.orderBy(desc(postTable.createdAt));
+
 		return { posts: postWithUser, user: userInformationwWithoutPassword };
 	} else {
 		return redirect(301, '/login');
