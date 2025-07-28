@@ -65,7 +65,7 @@
 			postStore.insertPost(newPost);
 			formState.fields = { description: '', image: null, imagePreview: null };
 			formState.error = '';
-			toast('postingan berhasil diupload');
+			toast.success('postingan berhasil diupload');
 		} catch (error) {
 			formState.error = (error as Error).message;
 			console.log(error);
