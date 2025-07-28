@@ -25,7 +25,7 @@ export const postTable = pgTable('posts', (t) => ({
 	image: t.text(),
 	userId: t
 		.uuid()
-		.references(() => userTable.id)
+		.references(() => userTable.id, { onDelete: 'cascade' })
 		.notNull(),
 	createdAt: t.timestamp('created_at').notNull().defaultNow(),
 	updatedAt: t
@@ -41,11 +41,11 @@ export const commentTable = pgTable('comments', (t) => ({
 	id: t.serial('id').primaryKey().notNull(),
 	userId: t
 		.uuid('user_id')
-		.references(() => userTable.id)
+		.references(() => userTable.id, { onDelete: 'cascade' })
 		.notNull(),
 	postId: t
 		.serial('post_id')
-		.references(() => postTable.id)
+		.references(() => postTable.id, { onDelete: 'cascade' })
 		.notNull(),
 	description: t.text(),
 	image: t.text(),
@@ -63,10 +63,10 @@ export const likeTable = pgTable('likes', (t) => ({
 	id: t.serial('id').primaryKey().notNull(),
 	userId: t
 		.uuid('user_id')
-		.references(() => userTable.id)
+		.references(() => userTable.id, { onDelete: 'cascade' })
 		.notNull(),
-	postId: t.integer('post_id').references(() => postTable.id),
-	commentId: t.integer('comment_id').references(() => commentTable.id),
+	postId: t.integer('post_id').references(() => postTable.id, { onDelete: 'cascade' }),
+	commentId: t.integer('comment_id').references(() => commentTable.id, { onDelete: 'cascade' }),
 	createdAt: t.timestamp('created_at').notNull().defaultNow(),
 	updatedAt: t
 		.timestamp('updated_at')
@@ -75,7 +75,7 @@ export const likeTable = pgTable('likes', (t) => ({
 		.$onUpdate(() => new Date(Date.now()))
 }));
 
-export type Like = typeof likeTable.$inferSelect
+export type Like = typeof likeTable.$inferSelect;
 // export const usersTableRelations = relations(userTable, ({ many }) => ({
 // 	posts: many(postTable),
 // 	comments: many(commentTable)
