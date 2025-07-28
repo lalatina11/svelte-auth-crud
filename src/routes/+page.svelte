@@ -12,6 +12,7 @@
 	import type { FormEventHandler } from 'svelte/elements';
 	import type { PostWithUser } from '../types';
 	import type { PageProps } from './$types';
+	import { toast } from 'svelte-sonner';
 
 	// interface PostWithUser extends Post {
 	// 	posts: Post[];
@@ -64,6 +65,7 @@
 			postStore.insertPost(newPost);
 			formState.fields = { description: '', image: null, imagePreview: null };
 			formState.error = '';
+			toast('postingan berhasil diupload');
 		} catch (error) {
 			formState.error = (error as Error).message;
 			console.log(error);
@@ -76,9 +78,7 @@
 	const handleResetImage = () => {
 		formState.fields = { ...formState.fields, image: null, imagePreview: '' };
 	};
-	postStore.setPosts(
-		data.posts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) || []
-	);
+	postStore.setPosts(data.posts);
 </script>
 
 <title>Home</title>
