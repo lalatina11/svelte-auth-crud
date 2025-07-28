@@ -17,5 +17,5 @@ export interface PostWithUser {
 		avatar: string | null;
 		firstName: string | null;
 		lastName: string | null;
-	} | null;
+	};
 }
