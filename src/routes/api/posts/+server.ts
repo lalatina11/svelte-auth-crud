@@ -11,6 +11,7 @@ import 'dotenv/config';
 import { eq } from 'drizzle-orm';
 import ImageKit from 'imagekit';
 import jwt, { type JwtPayload } from 'jsonwebtoken';
+import type { PostWithUser } from '../../../types';
 
 export const GET = async () => {
 	const allposts = await db.select().from(postTable);
@@ -57,7 +58,7 @@ export const POST: Action = async (ctx) => {
 			.returning();
 
 		// Now fetch the new post with user info
-		const [postWithUser] = await db
+		const [postWithUser]: PostWithUser[] = await db
 			.select({
 				id: postTable.id,
 				description: postTable.description,
@@ -68,9 +69,9 @@ export const POST: Action = async (ctx) => {
 					id: userTable.id,
 					username: userTable.username,
 					email: userTable.email,
-					avatar:userTable.avatar,
-					firstName:userTable.firstName,
-					lastName:userTable.lastName,
+					avatar: userTable.avatar,
+					firstName: userTable.firstName,
+					lastName: userTable.lastName
 				}
 			})
 			.from(postTable)
