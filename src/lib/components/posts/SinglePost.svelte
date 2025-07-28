@@ -1,8 +1,13 @@
 <script lang="ts">
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
-
 	import type { PostWithUser } from '../../../types';
 	import { Button } from '../ui/button';
+	import * as Card from '$lib/components/ui/card';
+
+	import { Separator } from '$lib/components/ui/separator';
+	import { toast } from 'svelte-sonner';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import type { FormEventHandler } from 'svelte/elements';
 
 	const { post }: { post: PostWithUser } = $props();
 	// const handleDeletePost = (postId: number) => {
@@ -18,6 +23,14 @@
 		id: number;
 		userId: string;
 		description: string;
+		user: {
+			id: string;
+			username: string;
+			email: string;
+			avatar: string;
+			firstName: string;
+			lastName: string;
+		};
 	}
 
 	interface PostState {
@@ -25,13 +38,14 @@
 		comments: Comment[];
 		isLiked?: boolean;
 		likeCount?: number;
+		isCommentSection?: boolean;
 	}
 
 	let postState = $state<PostState>({ likes: [], comments: [], likeCount: 0 });
+	let formAddCommentState = $state({ description: '', isLoading: false });
 	const getLikesAndComments = async () => {
 		const res = await fetch('/api/posts/' + post.id, { credentials: 'include' });
-		const result = await res.json();
-		const data = result.data as PostState;
+		const { data } = await res.json() as { data: PostState };
 		postState = data;
 	};
 
@@ -46,19 +60,50 @@
 		});
 		postState = {
 			...postState,
-			isLiked: !postState.isLiked ,
+			isLiked: !postState.isLiked,
 			likeCount: postState.isLiked
 				? Number(postState.likeCount) - 1
 				: Number(postState.likeCount) + 1
 		};
 	};
+
+	const handleSetCommentSection = () => {
+		postState.isCommentSection = !postState.isCommentSection;
+	};
+
+	const handleAddComment: FormEventHandler<HTMLFormElement> = async (e) => {
+		e.preventDefault();
+		const formData = new FormData();
+		formData.append('description', formAddCommentState.description);
+		try {
+
+			formAddCommentState.isLoading = true;
+			const res = await fetch('/api/comments?postId=' + post.id, {
+				method: 'POST',
+				credentials: 'include',
+				body: formData
+			});
+			const { data } = await res.json() as { data: Comment };
+			postState.comments = [data, ...postState.comments];
+			postState.isCommentSection = true;
+			formAddCommentState.description = '';
+			toast.success('Berhasil menambahkan komentar');
+		} catch (e) {
+			console.log(e);
+			toast.error('Gagal menambahkan komentar');
+		} finally {
+			formAddCommentState.isLoading = false;
+		}
+	};
+
+
 </script>
 
-<div class="flex flex-col gap-2 rounded-md border border-zinc-500 p-4">
+<Card.Root class="flex flex-col gap-2 rounded-md border border-zinc-500 p-4">
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-3">
 			<Avatar.Root>
-				<Avatar.Image src={post.user.avatar} alt="@shadcn" />
+				<Avatar.Image src={post.user.avatar||""} alt="@shadcn" />
 				<Avatar.Fallback>
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
 					>
@@ -105,7 +150,7 @@
 			{/if}
 			<span>{postState.likeCount && postState.likeCount > 0 ? postState.likeCount : null}</span>
 		</Button>
-		<Button>
+		<Button onclick={handleSetCommentSection}>
 			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
 			>
 				<path
@@ -125,4 +170,58 @@
 			<span> Share </span>
 		</Button>
 	</div>
-</div>
+	<Separator class="my-2 mt-3" />
+	<div class="flex flex-col gap-3">
+		<form onsubmit={handleAddComment}>
+			<div class="flex gap-3">
+				<Textarea name="description" class="flex-1" placeholder="tambahkan komentar"
+									bind:value={formAddCommentState.description} />
+				{#if formAddCommentState.description.trim().length && !formAddCommentState.isLoading}
+					<Button disabled={formAddCommentState.isLoading||!formAddCommentState.description.trim().length}
+									type="submit">
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+								 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+								 class="lucide lucide-send-horizontal-icon lucide-send-horizontal">
+							<path
+								d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z" />
+							<path d="M6 12h16" />
+						</svg>
+					</Button>
+				{/if}
+			</div>
+		</form>
+		{#if postState.isCommentSection && !!postState.comments.length}
+			<span class="text-xs">Postingan ini memiliki {postState.comments.length} Komentar</span>
+			{#each postState.comments as comment (comment.id)}
+				<div class="flex flex-col gap-2 p-2 border border-zinc-500 rounded-md">
+					<div class="flex items-center justify-between">
+						<div class="flex items-center gap-2">
+							<Avatar.Root>
+								<Avatar.Image src={post.user.avatar||""} alt="@shadcn" />
+								<Avatar.Fallback>
+									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+									>
+										<path
+											fill="currentColor"
+											d="M12 19.2c-2.5 0-4.71-1.28-6-3.2c.03-2 4-3.1 6-3.1s5.97 1.1 6 3.1a7.23 7.23 0 0 1-6 3.2M12 5a3 3 0 0 1 3 3a3 3 0 0 1-3 3a3 3 0 0 1-3-3a3 3 0 0 1 3-3m0-3A10 10 0 0 0 2 12a10 10 0 0 0 10 10a10 10 0 0 0 10-10c0-5.53-4.5-10-10-10"
+										/>
+									</svg
+									>
+								</Avatar.Fallback>
+							</Avatar.Root>
+							<span
+							>{post.user.firstName && post.user.lastName
+								? post.user.firstName + ' ' + post.user.lastName
+								: post.user.username}</span
+							>
+						</div>
+						<span>opt</span>
+					</div>
+					<span class="text-sm px-2">{comment.description}</span>
+				</div>
+			{/each            }
+		{:else if postState.isCommentSection && !postState.comments.length}
+			<span class="text-xs text-center">Postingan ini belum memiliki komentar</span>
+		{/if}
+	</div>
+</Card.Root>
